@@ -8,7 +8,7 @@ cache:
 
 before_install:
     - sudo apt-get update
-    - sudo apt-get install --no-install-recommends -y libsdl1.2debian python3-pip
+    - sudo apt-get install --no-install-recommends -y libsdl1.2debian python3-pip scons
     - sudo pip3 install pylint pycodestyle
 
 install:
@@ -16,4 +16,4 @@ install:
     - source .envs
 
 script:
-    - make all BLENDER=$BLENDER_BIN PYLINT=pylint PEP8=pycodestyle
+    - scons BLENDER=$BLENDER_BIN PYLINT=pylint
