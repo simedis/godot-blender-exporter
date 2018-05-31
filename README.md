@@ -19,18 +19,20 @@ upstream [GitHub repository](https://github.com/godotengine/blender-exporter).
 
 ## Development Notes
 
-This repository includes a Makefile to assist with development. Running
-`make` from the project root will:
+In order to ease development, this repository is supplied with an SConstruct 
+file. Upon running [scons](https://scons.org/), it will:
 
 1. Export all of the blend files from the `tests/scenes` directory.  
    If you add a feature, it is suggested that you add a new blend file to 
    the `tests/scenes` directory that uses this feature.
-2. Runs `diff` on the output files conpared to the reference exports. This acts
-   as a regression test.
+2. Compare the exported files with previously generated reference exports. This 
+   acts as a regression test.
 3. Runs [pycodestyle](http://pycodestyle.pycqa.org/en/latest/) and
    [pylint](https://www.pylint.org/) style tests. Your code must pass these to
    be elegible to merge.
 
+This means that you don't have to manually export files to test it, nor do you
+have to reload the plugin or restart blender after making a change.
 
 Due to differences in blender versions creating minor differences in the 
 output files (even with the same blender release number), the regression tests 
@@ -39,7 +41,9 @@ are best run with blender 2.79 downloaded from
 which is used for the Travis builds. If you think your blender version is 
 adequate, the hash (visble in the upper right of blender's splash screen) 
 should be `5bd8ac9abfa`. The exporter itself should run on all modern versions 
-of blender, but the output may differ slightly.
+of blender, but the output may differ slightly (vertex iteration order).
+If you have this blender version with a different executable name, you can run
+`scons BLENDER=path/to/blender`
 
 
 ## License
