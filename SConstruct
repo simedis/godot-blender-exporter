@@ -1,13 +1,21 @@
 import os
 import shutil
+import platform
+
+
+if platform.system() == "Windows":
+	BLENDER_PATH = "C:\\Program Files\\Blender Foundation\\Blender\\blender.exe"
+	PYTHON3_PATH = "C:\Program Files\Python36\python.exe"
+else:
+	BLENDER_PATH = "blender"
+	PYTHON3_PATH = "python3"
 
 var = Variables()
 var.AddVariables(
-	("BLENDER", "path to blender executable", "blender"),
-	("PYTHON3", "path to python executable", "python3"),
-	("PYLINT", "path to pylint executable", "pylint3"),
-	("PYCODESTYLE", "path to pycodestyle executable", "pycodestyle")
+	("BLENDER", "path to blender executable", BLENDER_PATH),
+	("PYTHON3", "path to python3 executable. Pylint and pycodestyle should be available here", PYTHON3_PATH)
 )
+
 
 env = Environment(variables=var)
 Help(var.GenerateHelpText(env))
@@ -25,7 +33,8 @@ def export_blends(target, source, env):
 	if os.path.exists('./tests/.import'):
 		# Ensure we don't have any data cached in godot
 		shutil.rmtree('./tests/.import')  
-	return systemcall("{} -b --python ./tests/scenes/export_blends.py".format(
+
+	return systemcall('"{}" -b --python ./tests/scenes/export_blends.py'.format(
 		env['BLENDER']
 	))
 
@@ -40,10 +49,7 @@ def compare_exports(target, source, env):
 	files_2 = {f for f in os.listdir(REFERENCE_DIR) if not f.endswith('.import')}
 	
 	error = False
-	differ = difflib.Differ(
-		linejunk=lambda x: bool(x.strip()), 
-		charjunk=lambda x: x in [' ', '\t', '\n']
-	)
+	differ = difflib.Differ()
 	
 	for file_name in files_1.union(files_2):
 		if file_name not in files_2:
@@ -57,6 +63,11 @@ def compare_exports(target, source, env):
 	
 		data1 = open(os.path.join(REFERENCE_DIR, file_name)).readlines()
 		data2 = open(os.path.join(EXPORT_DIR, file_name)).readlines()
+
+		for line_id, line in enumerate(data1):  # Windows vs linux paths shouldn't be considered different
+			data1[line_id] = line.replace('/', '\\')
+		for line_id, line in enumerate(data2):
+			data2[line_id] = line.replace('/', '\\')
 		
 		for line_number, line in enumerate(differ.compare(data1, data2)):
 			if not line[0] == ' ':
@@ -75,8 +86,8 @@ def update_examples(target, source, env):
 
 
 def style_test(target, source, env):
-	systemcall(env["PYCODESTYLE"] + ' io_scene_godot')
-	systemcall(env["PYLINT"] + ' io_scene_godot')
+	systemcall('"{}" -m pycodestyle io_scene_godot'.format(env["PYTHON3"]))
+	systemcall('"{}" -m pylint io_scene_godot'.format(env["PYTHON3"]))
 
 
 export = env.Command('export_blends', None, export_blends) 

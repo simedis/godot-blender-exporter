@@ -6,3 +6,5 @@ tests/exports/*.escn
 
 .import 
 *.import
+
+.sconsign.dblite
